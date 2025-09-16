@@ -1,0 +1,121 @@
+import React, { useState } from "react";
+
+const App = () => {
+  const [page, setPage] = useState("home"); // home | level | game
+  const [level, setLevel] = useState(null);
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-100 font-sans">
+      {page === "home" && (
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-6">ยินดีต้อนรับ</h1>
+          <button
+            onClick={() => setPage("level")}
+            className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-green-600"
+          >
+            เริ่ม
+          </button>
+        </div>
+      )}
+
+      {page === "level" && (
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-6">เลือกระดับความยาก</h2>
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={() => {
+                setLevel("easy");
+                setPage("game");
+              }}
+              className="bg-yellow-400 px-5 py-2 rounded-lg hover:bg-yellow-500"
+            >
+              ง่าย
+            </button>
+            <button
+              onClick={() => {
+                setLevel("medium");
+                setPage("game");
+              }}
+              className="bg-orange-400 px-5 py-2 rounded-lg hover:bg-orange-500"
+            >
+              ปานกลาง
+            </button>
+            <button
+              onClick={() => {
+                setLevel("hard");
+                setPage("game");
+              }}
+              className="bg-red-400 px-5 py-2 rounded-lg hover:bg-red-500"
+            >
+              ยาก
+            </button>
+          </div>
+        </div>
+      )}
+
+      {page === "game" && <Game level={level} />}
+    </div>
+  );
+};
+
+const Game = ({ level }) => {
+  const allCards = [
+    { id: 1, word: "苹果", img: "🍎" },
+    { id: 2, word: "狗", img: "🐶" },
+    { id: 3, word: "猫", img: "🐱" },
+  ];
+
+  // สร้างคู่การ์ด (คำ + รูป)
+  const cards = [...allCards.map(c => ({ ...c, type: "word" })), 
+                 ...allCards.map(c => ({ ...c, type: "img" }))];
+
+  const [flipped, setFlipped] = useState([]);
+  const [matched, setMatched] = useState([]);
+
+  const handleFlip = (card) => {
+    if (flipped.length === 2 || matched.includes(card.id + card.type)) return;
+
+    const newFlipped = [...flipped, card];
+    setFlipped(newFlipped);
+
+    if (newFlipped.length === 2) {
+      const [first, second] = newFlipped;
+      if (first.id === second.id && first.type !== second.type) {
+        setMatched([...matched, first.id + first.type, second.id + second.type]);
+      }
+      setTimeout(() => setFlipped([]), 1000);
+    }
+  };
+
+  const isWin = matched.length === cards.length;
+
+  return (
+    <div className="text-center">
+      <h2 className="text-xl font-bold mb-4">จับคู่คำภาษาจีนกับรูปภาพ</h2>
+      <div className="grid grid-cols-4 gap-4 max-w-md mx-auto">
+        {cards.map((card, index) => {
+          const isOpen =
+            flipped.find(f => f.id === card.id && f.type === card.type) ||
+            matched.includes(card.id + card.type);
+
+          return (
+            <div
+              key={index}
+              onClick={() => handleFlip(card)}
+              className={`h-20 flex items-center justify-center rounded-lg shadow cursor-pointer 
+                ${isOpen ? "bg-white" : "bg-gray-400"}`}
+            >
+              {isOpen ? (card.type === "word" ? card.word : card.img) : "❓"}
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-6 text-2xl font-bold">
+        {isWin && "ยินดีด้วย 🎉"}
+      </div>
+    </div>
+  );
+};
+
+export default App;
+
